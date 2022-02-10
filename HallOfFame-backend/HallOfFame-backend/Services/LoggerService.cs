@@ -5,7 +5,7 @@ namespace HallOfFame_backend.Services
 {
     public class LoggerService : ILoggerService
     {
-        private static Logger logger = LogManager.GetLogger("hallOfFameLoggerRule");
+        private static NLog.Logger logger = LogManager.GetLogger("hallOfFameLoggerRule");
 
         public LoggerService() { }
 

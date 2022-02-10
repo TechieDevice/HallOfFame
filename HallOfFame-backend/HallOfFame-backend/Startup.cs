@@ -27,7 +27,7 @@ namespace HallOfFame_backend
             services.AddMvc();
             services.AddCors();
 
-            services.Configure<AppSettings>(AppConfiguration);
+            services.Configure<AppSettings.AppSettings>(AppConfiguration);
 
             var connection = AppConfiguration.GetConnectionString("DefaultConnection");
 
@@ -46,7 +46,7 @@ namespace HallOfFame_backend
             services.AddControllersWithViews();
 
             services.AddScoped<IPersonService, PersonService>();
-            services.AddSingleton<ILoggerService, LoggerService>();
+            //services.AddSingleton<ILoggerService, LoggerService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -69,9 +69,8 @@ namespace HallOfFame_backend
 
             app.UseCors();
 
+            //app.UseMiddleware<AppSettingsMiddleware>();
             app.UseMiddleware<ExceptionHandlerMiddleware>();
-
-            app.UseMiddleware<AppSettingsMiddleware>();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }

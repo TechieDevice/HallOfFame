@@ -19,7 +19,7 @@ namespace HallOfFame_Tests
         public override void Setup()
         {
             base.Setup();
-            _personService = new PersonService(_applicationContext, new EmptyLoggingService());
+            _personService = new PersonService(_applicationContext);
             PutTestData();
         }
 

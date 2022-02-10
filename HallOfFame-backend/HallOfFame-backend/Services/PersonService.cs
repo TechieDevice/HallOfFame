@@ -13,12 +13,12 @@ namespace HallOfFame_backend.Services
     public class PersonService : IPersonService
     {
         private ApplicationContext _context;
-        private ILoggerService _logger;
+        //private ILoggerService _logger;
 
-        public PersonService(ApplicationContext context, ILoggerService logger)
+        public PersonService(ApplicationContext context)
         {
             _context = context;
-            _logger = logger;
+            //_logger = logger;
         }
 
         public async Task AddPerson(CreatePersonDto personDto)
@@ -38,7 +38,7 @@ namespace HallOfFame_backend.Services
             }
             catch (Exception e)
             {
-                _logger.Error(e.Message);
+                //_logger.Error(e.Message);
                 throw e;
             }          
         }
@@ -66,7 +66,7 @@ namespace HallOfFame_backend.Services
             }
             catch (NullReferenceException e)
             {
-                _logger.Error(e.Message);
+                //_logger.Error(e.Message);
                 throw e;
             }
         }
@@ -110,7 +110,7 @@ namespace HallOfFame_backend.Services
             }
             catch (Exception e)
             {
-                _logger.Error(e.Message);
+                //_logger.Error(e.Message);
                 throw e;
             }
         }
@@ -133,7 +133,7 @@ namespace HallOfFame_backend.Services
             }
             catch (Exception e)
             {
-                _logger.Error(e.Message);
+                //_logger.Error(e.Message);
                 throw e;
             }
         }
@@ -156,7 +156,7 @@ namespace HallOfFame_backend.Services
             }
             catch (Exception e)
             {
-                _logger.Error(e.Message);
+                //_logger.Error(e.Message);
                 throw e;
             }
         }
