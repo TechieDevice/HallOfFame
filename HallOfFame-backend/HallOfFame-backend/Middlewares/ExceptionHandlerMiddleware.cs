@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading.Tasks;
 using HallOfFame_backend.Logger;
 using System.IO;
+using Microsoft.EntityFrameworkCore;
 
 namespace HallOfFame_backend.Middlewares
 {
@@ -14,7 +15,7 @@ namespace HallOfFame_backend.Middlewares
     {
         private readonly RequestDelegate _next;
         private AppSettings.AppSettings _settings;
-        private ILogger _logger;
+        private static ILogger _logger;
 
         public ExceptionHandlerMiddleware(RequestDelegate next, IOptions<AppSettings.AppSettings> options)
         {
@@ -33,19 +34,28 @@ namespace HallOfFame_backend.Middlewares
         {
             try
             {
-                _logger.LogInformation("app start");
+                _logger.LogInformation("server starting...");
                 await _next.Invoke(context);
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {             
-                await HandleExceptionMessageAsync(context, ex).ConfigureAwait(false);
+                await HandleExceptionMessageAsync(context, ex, (int)HttpStatusCode.BadRequest).ConfigureAwait(false);
+            }
+            catch (NullReferenceException ex)
+            {
+                await HandleExceptionMessageAsync(context, ex, (int)HttpStatusCode.BadRequest).ConfigureAwait(false);
+            }
+            catch (DbUpdateException ex)
+            {
+                await HandleExceptionMessageAsync(context, ex, (int)HttpStatusCode.InternalServerError).ConfigureAwait(false);
             }
         }
 
-        private static Task HandleExceptionMessageAsync(HttpContext context, Exception exception)
+        private static Task HandleExceptionMessageAsync(HttpContext context, Exception exception, int statusCode)
         {
+            _logger.LogError(exception.Message);
+
             context.Response.ContentType = "application/json";
-            int statusCode = (int)HttpStatusCode.InternalServerError;
             var result = JsonConvert.SerializeObject(new
             {
                 StatusCode = statusCode,

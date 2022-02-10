@@ -38,7 +38,7 @@ namespace HallOfFame_backend.Logger
         private void WriteMessageToFile(LogLevel logLevel, EventId eventId, Exception exception, string message)
         {
             var date = DateTime.Now;
-            var messageString = $"{date}|{logLevel}|{_name}|{eventId}";
+            var messageString = $"{date} | {logLevel} | {_name} | {eventId}";
             messageString += Environment.NewLine;
             messageString += $"message: {message}";
 

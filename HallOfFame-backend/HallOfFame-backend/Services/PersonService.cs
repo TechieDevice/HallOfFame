@@ -45,120 +45,79 @@ namespace HallOfFame_backend.Services
 
         public async Task DeletePerson(long id)
         {
-            try
+            var personToDelete = await _context.Persons.FirstOrDefaultAsync(u => u.Id == id);
+            if (personToDelete == null)
             {
-                var personToDelete = await _context.Persons.FirstOrDefaultAsync(u => u.Id == id);
-                if (personToDelete == null)
-                {
-                    throw new Exception("incorrect id, no such 'person' in DB");
-                }
-
-                //if (personToDelete.Skills != null)
-                //{
-                //    for(var i = 0; i < personToDelete.Skills.Count; i++)
-                //    {
-                //        await DeleteSkill(personToDelete.Skills[i].Id);
-                //    }
-                //}
-
-                _context.Remove(personToDelete);
-                await _context.SaveChangesAsync();
+                throw new ArgumentException("incorrect id, no such 'person' in DB");
             }
-            catch (NullReferenceException e)
-            {
-                //_logger.Error(e.Message);
-                throw e;
-            }
+            _context.Remove(personToDelete);
+            await _context.SaveChangesAsync();
         }
 
         public async Task EditPerson(long personId, EditPersonDto personDto)
         {
-            try
+            var existingPerson = await _context.Persons.FirstOrDefaultAsync(u => u.Id == personId);
+            if (existingPerson == null)
             {
-                var existingPerson = await _context.Persons.FirstOrDefaultAsync(u => u.Id == personId);
-                if (existingPerson == null)
-                {
-                    throw new Exception("incorrect id, no such 'person' in DB");
-                }
+                throw new ArgumentException("incorrect id, no such 'person' in DB");
+            }
 
-                existingPerson.DisplayName = personDto.DisplayName;
-                existingPerson.Name = personDto.Name;
-                _context.Update(existingPerson);
-                await _context.SaveChangesAsync();
+            existingPerson.DisplayName = personDto.DisplayName;
+            existingPerson.Name = personDto.Name;
+            _context.Update(existingPerson);
+            await _context.SaveChangesAsync();
 
-                var dbSkillList = await GetSkills(personId);
+            var dbSkillList = await GetSkills(personId);
             
-                foreach (var skill in personDto.Skills)
+            foreach (var skill in personDto.Skills)
+            {
+                if (dbSkillList.Exists(s => s.Id == skill.Id))
                 {
-                    if (dbSkillList.Exists(s => s.Id == skill.Id))
-                    {
-                        await EditSkill(skill);
-                    }
-                    else
-                    {
-                        await AddSkill(ToCreateDto(skill), personId);
-                    }
+                    await EditSkill(skill);
                 }
-
-                foreach (var skill in dbSkillList)
+                else
                 {
-                    if (!personDto.Skills.Exists(s => s.Id == skill.Id))
-                    {
-                        await DeleteSkill(skill.Id);
-                    }
+                    await AddSkill(ToCreateDto(skill), personId);
                 }
             }
-            catch (Exception e)
+
+            foreach (var skill in dbSkillList)
             {
-                //_logger.Error(e.Message);
-                throw e;
+                if (!personDto.Skills.Exists(s => s.Id == skill.Id))
+                {
+                    await DeleteSkill(skill.Id);
+                }
             }
         }
 
         public async Task<List<GetPersonDto>> GetPersons()
         {
-            try
-            {
-                var result = await _context.Persons
-                .AsNoTracking()
-                .Select(p => ToDto(p))
-                .ToListAsync();
+            var result = await _context.Persons
+            .AsNoTracking()
+            .Select(p => ToDto(p))
+            .ToListAsync();
 
-                for (var i = 0; i < result.Count; i++)
-                {
-                    result[i].Skills = await GetSkills(result[i].Id);
-                }
-
-                return result;
-            }
-            catch (Exception e)
+            for (var i = 0; i < result.Count; i++)
             {
-                //_logger.Error(e.Message);
-                throw e;
+                result[i].Skills = await GetSkills(result[i].Id);
             }
+
+            return result;
         }
 
         public async Task<GetPersonDto> GetPerson(long id)
         {
-            try
+            var person = await _context.Persons.FirstOrDefaultAsync(p => p.Id == id);
+
+            if (person == null)
             {
-                var person = await _context.Persons.FirstOrDefaultAsync(p => p.Id == id);
-
-                if (person == null)
-                {
-                    throw new Exception("incorrect id, no such 'person' in DB");
-                }
-
-                var personDto = ToDto(person);
-                personDto.Skills = await GetSkills(id);
-
-                return personDto;
+                throw new ArgumentException("incorrect id, no such 'person' in DB");
             }
-            catch (Exception e)
-            {
-                //_logger.Error(e.Message);
-                throw e;
-            }
+
+            var personDto = ToDto(person);
+            personDto.Skills = await GetSkills(id);
+
+            return personDto;
         }
 
         private async Task AddSkill(CreateSkillDto skillDto, long personId)
@@ -173,7 +132,7 @@ namespace HallOfFame_backend.Services
             var skillToDelete = await _context.Skills.FirstOrDefaultAsync(s => s.Id == id);
             if (skillToDelete == null)
             {
-                throw new Exception("incorrect id, no such 'skill' in DB");
+                throw new ArgumentException("incorrect id, no such 'skill' in DB");
             }
 
             _context.Remove(skillToDelete);
@@ -185,7 +144,7 @@ namespace HallOfFame_backend.Services
             var existingSkill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillDto.Id);
             if (existingSkill == null)
             {
-                throw new Exception("incorrect id, no such 'skill' in DB");
+                throw new ArgumentException("incorrect id, no such 'skill' in DB");
             }
 
             existingSkill.Level = skillDto.Level;
