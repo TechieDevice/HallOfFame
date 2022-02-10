@@ -28,14 +28,13 @@ namespace HallOfFame_Tests
         {
             var count = await _applicationContext.Persons.CountAsync();
 
-            PersonDto person = new PersonDto
+            CreatePersonDto person = new CreatePersonDto
             {
-                Id = defaultId3,
                 Name = "Jhon",
                 DisplayName = "TestUser3",
-                Skills = new System.Collections.Generic.List<SkillDto>()
+                Skills = new System.Collections.Generic.List<CreateSkillDto>()
             };
-            person.Skills.Add(new SkillDto
+            person.Skills.Add(new CreateSkillDto
             {          
                 Name = "Testing",
                 Level = 3
@@ -63,13 +62,13 @@ namespace HallOfFame_Tests
         [Test]
         public async Task PersonService_Edit_ShouldEdit()
         {
-            var person = new PersonDto
+            var person = new EditPersonDto
             {
                 Name = "Bob",
                 DisplayName = "TestUser1",
-                Skills = new System.Collections.Generic.List<SkillDto>()
+                Skills = new System.Collections.Generic.List<EditSkillDto>()
             };
-            person.Skills.Add(new SkillDto
+            person.Skills.Add(new EditSkillDto
             {
                 Name = "Testing",
                 Level = 3

@@ -2,11 +2,10 @@
 
 namespace HallOfFame_backend.Dtos
 {
-    public class PersonDto
+    public class CreatePersonDto
     {
-        public long? Id { get; set; }
         public string Name { get; set; }
         public string DisplayName { get; set; }
-        public List<SkillDto> Skills { get; set; }
+        public List<CreateSkillDto> Skills { get; set; }
     }
 }

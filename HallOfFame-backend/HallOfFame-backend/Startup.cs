@@ -1,28 +1,35 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using NLog;
 using Swashbuckle.AspNetCore.SwaggerUI;
 using HallOfFame_backend.DataBase;
 using HallOfFame_backend.Services;
 using HallOfFame_backend.Services.Interfaces;
+using HallOfFame_backend.Middlewares;
+using Microsoft.Extensions.Configuration;
 
 namespace HallOfFame_backend
 {
     public class Startup
     {
+        public Startup(IConfiguration configuration)
+        {
+            AppConfiguration = configuration;
+        }
+
+        public IConfiguration AppConfiguration { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
             services.AddCors();
 
-            services.AddSingleton<AppSettings>();
+            services.Configure<AppSettings>(AppConfiguration);
 
-            var connection = AppSettings.GetConnectionString();
+            var connection = AppConfiguration.GetConnectionString("DefaultConnection");
 
             services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
 
@@ -61,6 +68,10 @@ namespace HallOfFame_backend
             app.UseRouting();
 
             app.UseCors();
+
+            app.UseMiddleware<ExceptionHandlerMiddleware>();
+
+            app.UseMiddleware<AppSettingsMiddleware>();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }

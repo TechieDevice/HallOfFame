@@ -20,28 +20,28 @@ namespace HallOfFame_backend.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Post(PersonDto userDto)
+        public async Task<ActionResult> Post(CreatePersonDto userDto)
         {
             await _personService.AddPerson(userDto);
             return Ok();
         }
 
         [HttpGet]
-        public async Task<ActionResult<PersonDto>> GetAll()
+        public async Task<ActionResult<GetPersonDto>> GetAll()
         {
             var result = await _personService.GetPersons();
             return Ok(result);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<PersonDto>> Get(long id)
+        public async Task<ActionResult<GetPersonDto>> Get(long id)
         {
             var result = await _personService.GetPerson(id);
             return Ok(result);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PersonDto>> Put(long id, PersonDto user)
+        public async Task<ActionResult> Put(long id, EditPersonDto user)
         {
             await _personService.EditPerson(id, user);
             return Ok();

@@ -1,24 +1,31 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace HallOfFame_backend
 {
     public class AppSettings
     {
-        public static string GetConnectionString()
-        {
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-            {
-                return Environment.GetEnvironmentVariable("DefaultConnection");
-            }
+        public Logging Logging { get; set; }
+        public ConnectionStrings ConnectionStrings { get; set; }
+        public string AllowedHosts { get; set; }
+    }
 
-            var dbServer = Environment.GetEnvironmentVariable("DBSERVER");
-            var dbUser = Environment.GetEnvironmentVariable("DBUSER");
-            var dbPass = Environment.GetEnvironmentVariable("DBPASS");
-            var dbPort = Environment.GetEnvironmentVariable("DBPORT");
-            var dbName = Environment.GetEnvironmentVariable("DBNAME");
+    public class ConnectionStrings
+    {
+        public string DefaultConnection { get; set; }
+    }
 
-            return $"Server={dbServer},{dbPort};Database={dbName};User={dbUser};Password={dbPass};MultipleActiveResultSets=true;";
-        }
+    public class Logging
+    {
+        public LogLevel LogLevel { get; set; }
+    }
+
+    public class LogLevel
+    {
+        public string Default { get; set; }
+        public string Microsoft { get; set; }
+        public string Lifetime { get; set; }
     }
 }

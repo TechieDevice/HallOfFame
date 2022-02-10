@@ -6,14 +6,14 @@ namespace HallOfFame_backend.Services.Interfaces
 {
     public interface IPersonService
     {
-        public Task AddPerson(PersonDto userDto);
+        public Task AddPerson(CreatePersonDto userDto);
 
         public Task DeletePerson(long id);
 
-        public Task EditPerson(long id, PersonDto userDto);
+        public Task EditPerson(long id, EditPersonDto userDto);
 
-        public Task<List<PersonDto>> GetPersons();
+        public Task<List<GetPersonDto>> GetPersons();
 
-        public Task<PersonDto> GetPerson(long id);
+        public Task<GetPersonDto> GetPerson(long id);
     }
 }

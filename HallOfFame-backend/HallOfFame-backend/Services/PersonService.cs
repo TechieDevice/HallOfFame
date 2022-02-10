@@ -21,7 +21,7 @@ namespace HallOfFame_backend.Services
             _logger = logger;
         }
 
-        public async Task AddPerson(PersonDto personDto)
+        public async Task AddPerson(CreatePersonDto personDto)
         {          
             try
             {
@@ -30,10 +30,9 @@ namespace HallOfFame_backend.Services
                 await _context.SaveChangesAsync();
                 if (personDto.Skills != null)
                 {
-                    foreach (SkillDto skillDto in personDto.Skills)
+                    foreach (var skillDto in personDto.Skills)
                     {
-                        skillDto.PersonId = person.Id;
-                        await AddSkill(skillDto);
+                        await AddSkill(skillDto, person.Id);
                     }
                 }
             }
@@ -54,13 +53,13 @@ namespace HallOfFame_backend.Services
                     throw new Exception("incorrect id, no such 'person' in DB");
                 }
 
-                if (personToDelete.Skills != null)
-                {
-                    for(int i = 0; i < personToDelete.Skills.Count; i++)
-                    {
-                        await DeleteSkill(personToDelete.Skills[i].Id);
-                    }
-                }
+                //if (personToDelete.Skills != null)
+                //{
+                //    for(var i = 0; i < personToDelete.Skills.Count; i++)
+                //    {
+                //        await DeleteSkill(personToDelete.Skills[i].Id);
+                //    }
+                //}
 
                 _context.Remove(personToDelete);
                 await _context.SaveChangesAsync();
@@ -72,11 +71,11 @@ namespace HallOfFame_backend.Services
             }
         }
 
-        public async Task EditPerson(long id, PersonDto personDto)
+        public async Task EditPerson(long personId, EditPersonDto personDto)
         {
             try
             {
-                var existingPerson = await _context.Persons.FirstOrDefaultAsync(u => u.Id == id);
+                var existingPerson = await _context.Persons.FirstOrDefaultAsync(u => u.Id == personId);
                 if (existingPerson == null)
                 {
                     throw new Exception("incorrect id, no such 'person' in DB");
@@ -87,26 +86,25 @@ namespace HallOfFame_backend.Services
                 _context.Update(existingPerson);
                 await _context.SaveChangesAsync();
 
-                var dbSkillList = await GetSkills(id);
+                var dbSkillList = await GetSkills(personId);
             
-                foreach (SkillDto skill in personDto.Skills)
+                foreach (var skill in personDto.Skills)
                 {
-                    skill.PersonId = id;
                     if (dbSkillList.Exists(s => s.Id == skill.Id))
                     {
                         await EditSkill(skill);
                     }
                     else
                     {
-                        await AddSkill(skill);
+                        await AddSkill(ToCreateDto(skill), personId);
                     }
                 }
 
-                foreach (SkillDto skill in dbSkillList)
+                foreach (var skill in dbSkillList)
                 {
                     if (!personDto.Skills.Exists(s => s.Id == skill.Id))
                     {
-                        await DeleteSkill(skill.Id.Value);
+                        await DeleteSkill(skill.Id);
                     }
                 }
             }
@@ -117,7 +115,7 @@ namespace HallOfFame_backend.Services
             }
         }
 
-        public async Task<List<PersonDto>> GetPersons()
+        public async Task<List<GetPersonDto>> GetPersons()
         {
             try
             {
@@ -126,9 +124,9 @@ namespace HallOfFame_backend.Services
                 .Select(p => ToDto(p))
                 .ToListAsync();
 
-                for (int i = 0; i < result.Count; i++)
+                for (var i = 0; i < result.Count; i++)
                 {
-                    result[i].Skills = await GetSkills(result[i].Id.Value);
+                    result[i].Skills = await GetSkills(result[i].Id);
                 }
 
                 return result;
@@ -140,7 +138,7 @@ namespace HallOfFame_backend.Services
             }
         }
 
-        public async Task<PersonDto> GetPerson(long id)
+        public async Task<GetPersonDto> GetPerson(long id)
         {
             try
             {
@@ -163,9 +161,9 @@ namespace HallOfFame_backend.Services
             }
         }
 
-        private async Task AddSkill(SkillDto skillDto)
+        private async Task AddSkill(CreateSkillDto skillDto, long personId)
         {
-            var skill = ToModel(skillDto);
+            var skill = ToModel(skillDto, personId);
             await _context.AddAsync(skill);
             await _context.SaveChangesAsync();
         }
@@ -182,9 +180,9 @@ namespace HallOfFame_backend.Services
             await _context.SaveChangesAsync();
         }
 
-        private async Task EditSkill(SkillDto skillDto)
+        private async Task EditSkill(EditSkillDto skillDto)
         {
-            Skill existingSkill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillDto.Id.Value);
+            var existingSkill = await _context.Skills.FirstOrDefaultAsync(s => s.Id == skillDto.Id);
             if (existingSkill == null)
             {
                 throw new Exception("incorrect id, no such 'skill' in DB");
@@ -196,7 +194,7 @@ namespace HallOfFame_backend.Services
             await _context.SaveChangesAsync();
         }
 
-        private async Task<List<SkillDto>> GetSkills(long id)
+        private async Task<List<GetSkillDto>> GetSkills(long id)
         {
             var result = await _context.Skills
                 .AsNoTracking()
@@ -207,7 +205,7 @@ namespace HallOfFame_backend.Services
             return result;
         }
 
-        private Person ToModel(PersonDto personDto)
+        private Person ToModel(CreatePersonDto personDto)
         {
             return new Person
             {
@@ -216,9 +214,9 @@ namespace HallOfFame_backend.Services
             };
         }
 
-        private static PersonDto ToDto(Person person)
+        private static GetPersonDto ToDto(Person person)
         {
-            return new PersonDto
+            return new GetPersonDto
             {
                 Id = person.Id,
                 DisplayName = person.DisplayName,
@@ -226,24 +224,33 @@ namespace HallOfFame_backend.Services
             };
         }
 
-        private Skill ToModel(SkillDto skillDto)
+        private Skill ToModel(CreateSkillDto skillDto, long personId)
         {
             return new Skill
             {
                 Level = skillDto.Level,
                 Name = skillDto.Name,
-                PersonId = skillDto.PersonId.Value
+                PersonId = personId
             };
         }
 
-        private static SkillDto ToDto(Skill skill)
+        private static GetSkillDto ToDto(Skill skill)
         {
-            return new SkillDto
+            return new GetSkillDto
             {
                 Id = skill.Id,
                 Level = skill.Level,
                 Name = skill.Name,
                 PersonId = skill.PersonId
+            };
+        }
+
+        private static CreateSkillDto ToCreateDto(EditSkillDto skillDto)
+        {
+            return new CreateSkillDto
+            {
+                Level = skillDto.Level,
+                Name = skillDto.Name
             };
         }
     }

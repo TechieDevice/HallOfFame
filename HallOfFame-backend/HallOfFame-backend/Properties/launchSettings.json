@@ -12,8 +12,7 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "DefaultConnection": "Server=127.0.0.1,1433;Database=HallOfFameDB;User=sa;Password=str0ngPa$$;MultipleActiveResultSets=true;"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "HallOfFame_backend": {
