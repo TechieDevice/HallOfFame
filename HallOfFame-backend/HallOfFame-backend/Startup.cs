@@ -10,6 +10,7 @@ using HallOfFame_backend.Services;
 using HallOfFame_backend.Services.Interfaces;
 using HallOfFame_backend.Middlewares;
 using Microsoft.Extensions.Configuration;
+using System;
 
 namespace HallOfFame_backend
 {
@@ -29,9 +30,19 @@ namespace HallOfFame_backend
 
             services.Configure<AppSettings.AppSettings>(AppConfiguration);
 
-            var connection = AppConfiguration.GetConnectionString("DefaultConnection");
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+            {
+                var connection = AppConfiguration.GetConnectionString("DefaultConnection");
 
-            services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
+                services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
+            }
+            else
+            {
+                services.AddSingleton<SetDockerConnection>();
+                var connection = SetDockerConnection.GetConnectionString();
+
+                services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connection));
+            }
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -69,7 +80,6 @@ namespace HallOfFame_backend
 
             app.UseCors();
 
-            //app.UseMiddleware<AppSettingsMiddleware>();
             app.UseMiddleware<ExceptionHandlerMiddleware>();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
